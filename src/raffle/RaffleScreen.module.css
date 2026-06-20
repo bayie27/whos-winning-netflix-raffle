@@ -1,0 +1,84 @@
+.raffleContainer {
+  background-color: #141414;
+  color: #ffffff;
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 24px 48px;
+  position: relative;
+  z-index: 10;
+}
+
+.backButton {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 24px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e50914;
+  letter-spacing: 0.5px;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 48px 80px 48px;
+}
+
+/* HUD Controls Stub style */
+.controlsStub {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #333;
+  padding: 16px;
+  border-radius: 4px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hudButton {
+  background: #333;
+  color: #fff;
+  border: 0;
+  padding: 6px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.hudButton:hover:not(:disabled) {
+  background: #444;
+}
+
+.hudButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
