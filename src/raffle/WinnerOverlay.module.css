@@ -1,0 +1,82 @@
+.overlayContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.winnerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0.3);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+}
+
+.winnerCard.zoom,
+.winnerCard.reveal {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.avatarWrapper {
+  width: 60vw;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  background-color: #1f1f1f;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initialsFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(32px, 8vw, 96px);
+}
+
+.winnerName {
+  margin-top: 32px;
+  font-size: clamp(24px, 4vw, 56px);
+  font-weight: 700;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
+  text-align: center;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.winnerName.nameVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
