@@ -33,6 +33,14 @@ export default function SetupScreen({
 
   return (
     <div className={styles.setupContainer}>
+      <div className={styles.logoContainer}>
+        <img
+          src="/assets/logo/JPCS_Netflix Logo.png"
+          alt="JPCS-DLSL Logo"
+          className={styles.logoImage}
+        />
+      </div>
+
       <form onSubmit={handleSubmit} className={styles.setupForm}>
         <h1 className={styles.title}>Who's Winning?</h1>
         <p className={styles.subtitle}>Enter participant names to start the raffle</p>
@@ -59,7 +67,7 @@ export default function SetupScreen({
         <div className={styles.inputGroup}>
           <div className={styles.sliderHeader}>
             <label htmlFor="suspense-slider" className={styles.label}>
-              Suspense Duration
+              Duration
             </label>
             <span className={styles.sliderValue}>{initialSuspenseDuration.toFixed(1)}s</span>
           </div>

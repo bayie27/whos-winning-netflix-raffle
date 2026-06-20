@@ -2,19 +2,40 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  width: 100vw;
+  min-height: 100vh;
   padding: 24px;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.85) 100%),
+              url('../assets/netflix_collage.png') no-repeat center center/cover;
+  position: relative;
+  overflow-y: auto;
+}
+
+.logoContainer {
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  z-index: 10;
+}
+
+.logoImage {
+  height: 100px;
+  width: auto;
+  display: block;
 }
 
 .setupForm {
-  background: rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
-  padding: 48px;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 8px;
+  padding: 60px 68px;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.85);
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 5;
+  margin: 60px 0;
 }
 
 .title {
@@ -22,51 +43,74 @@
   font-weight: 700;
   color: #fff;
   margin: 0 0 8px 0;
-  text-align: center;
+  text-align: left;
 }
 
 .subtitle {
   font-size: 14px;
   color: #8c8c8c;
   margin: 0 0 28px 0;
-  text-align: center;
+  text-align: left;
 }
 
 .inputGroup {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
 }
 
 .label {
-  font-size: 14px;
-  color: #8c8c8c;
+  font-size: 13px;
+  font-weight: 500;
+  color: #b3b3b3;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .textarea {
-  background: #333;
-  border: 0;
+  background: #333333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  color: #fff;
+  color: #ffffff;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 15px;
   padding: 16px;
-  resize: vertical;
+  resize: none;
   min-height: 180px;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .textarea:focus {
   outline: none;
-  background: #454545;
-  box-shadow: 0 0 0 2px #e50914;
+  background: #444444;
+  border-color: #e50914;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.textarea::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.textarea::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
 }
 
 .metaRow {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 12px;
   color: #8c8c8c;
 }
@@ -83,7 +127,7 @@
 
 .sliderValue {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   color: #fff;
 }
 
@@ -91,61 +135,65 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #333;
+  height: 4px;
+  border-radius: 2px;
+  background: #444444;
   outline: none;
-  margin: 8px 0;
+  margin: 12px 0;
 }
 
-/* Chrome/Safari slider thumb */
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #e50914;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.1s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 .slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
   background: #ff1e27;
 }
 
-/* Firefox slider thumb */
 .slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 0;
   border-radius: 50%;
   background: #e50914;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.1s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 .slider::-moz-range-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
   background: #ff1e27;
 }
 
 .startButton {
   background: #e50914;
-  color: #fff;
+  color: #ffffff;
   border: 0;
   border-radius: 4px;
   padding: 16px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   margin-top: 16px;
-  transition: background 0.2s ease, transform 0.1s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .startButton:hover:not(:disabled) {
-  background: #c11119;
+  background: #ff1e27;
+  box-shadow: 0 6px 15px rgba(229, 9, 20, 0.5);
 }
 
 .startButton:active:not(:disabled) {
@@ -153,7 +201,22 @@
 }
 
 .startButton:disabled {
-  background: #4a4a4a;
-  color: #8c8c8c;
+  background: #2f2f2f;
+  color: #737373;
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .setupForm {
+    padding: 36px 24px;
+    margin: 20px 0;
+  }
+  .logoContainer {
+    top: 16px;
+    left: 16px;
+  }
+  .logoImage {
+    height: 60px;
+  }
 }
