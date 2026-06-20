@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { parseNames } from '../lib/parseNames';
 import type { SessionConfig } from '../types';
 import styles from './SetupScreen.module.css';
 
 export interface SetupScreenProps {
+  initialRawText: string;
+  initialSuspenseDuration: number;
+  onChangeRawText: (text: string) => void;
+  onChangeSuspenseDuration: (duration: number) => void;
   onStart: (config: SessionConfig) => void;
 }
 
-export default function SetupScreen({ onStart }: SetupScreenProps) {
-  const [rawText, setRawText] = useState('');
-  const [suspenseDuration, setSuspenseDuration] = useState(5.0);
-
-  const participants = parseNames(rawText);
+export default function SetupScreen({
+  initialRawText,
+  initialSuspenseDuration,
+  onChangeRawText,
+  onChangeSuspenseDuration,
+  onStart,
+}: SetupScreenProps) {
+  const participants = parseNames(initialRawText);
   const isValid = participants.length >= 2;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,7 +26,7 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
     if (isValid) {
       onStart({
         participants,
-        suspenseDuration,
+        suspenseDuration: initialSuspenseDuration,
       });
     }
   };
@@ -37,8 +44,8 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
           <textarea
             id="names-input"
             className={styles.textarea}
-            value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
+            value={initialRawText}
+            onChange={(e) => onChangeRawText(e.target.value)}
             placeholder="Alice&#10;Bob&#10;Charlie..."
             rows={10}
           />
@@ -54,7 +61,7 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
             <label htmlFor="suspense-slider" className={styles.label}>
               Suspense Duration
             </label>
-            <span className={styles.sliderValue}>{suspenseDuration.toFixed(1)}s</span>
+            <span className={styles.sliderValue}>{initialSuspenseDuration.toFixed(1)}s</span>
           </div>
           <input
             id="suspense-slider"
@@ -62,8 +69,8 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
             min={3}
             max={10}
             step={0.5}
-            value={suspenseDuration}
-            onChange={(e) => setSuspenseDuration(parseFloat(e.target.value))}
+            value={initialSuspenseDuration}
+            onChange={(e) => onChangeSuspenseDuration(parseFloat(e.target.value))}
             className={styles.slider}
           />
         </div>

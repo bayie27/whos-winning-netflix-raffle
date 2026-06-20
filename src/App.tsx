@@ -6,6 +6,8 @@ import styles from './App.module.css';
 
 function App() {
   const [view, setView] = useState<'setup' | 'raffle'>('setup');
+  const [rawText, setRawText] = useState('');
+  const [suspenseDuration, setSuspenseDuration] = useState(5.0);
   const [sessionConfig, setSessionConfig] = useState<SessionConfig | null>(null);
 
   const handleStartRaffle = (config: SessionConfig) => {
@@ -16,13 +18,18 @@ function App() {
   return (
     <div className={styles.container}>
       {view === 'setup' ? (
-        <SetupScreen onStart={handleStartRaffle} />
+        <SetupScreen
+          initialRawText={rawText}
+          initialSuspenseDuration={suspenseDuration}
+          onChangeRawText={setRawText}
+          onChangeSuspenseDuration={setSuspenseDuration}
+          onStart={handleStartRaffle}
+        />
       ) : (
         <RaffleScreen
           config={sessionConfig!}
           onBack={() => {
             setView('setup');
-            setSessionConfig(null);
           }}
         />
       )}
