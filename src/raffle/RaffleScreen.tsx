@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import type { SessionConfig } from '../types';
 import ProfileGrid from './ProfileGrid';
 import OperatorControls from './OperatorControls';
+import RaffleCursor from './RaffleCursor';
+import WinnerOverlay from './WinnerOverlay';
 import useRaffle from '../hooks/useRaffle';
 import styles from './RaffleScreen.module.css';
 
@@ -14,7 +16,10 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
   const {
     participants,
     focusedId,
+    cursorRef,
     animationPhase,
+    winnerOverlayPhase,
+    currentWinner,
     canDraw,
     canUndo,
     isComplete,
@@ -35,6 +40,8 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
     };
   }, []);
 
+  const isCursorVisible = animationPhase === 'jitter' || animationPhase === 'decel';
+
   return (
     <div className={styles.raffleContainer}>
       <header className={styles.header}>
@@ -52,13 +59,23 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
         />
       </main>
 
+      <RaffleCursor
+        ref={cursorRef}
+        visible={isCursorVisible}
+      />
+
+      <WinnerOverlay
+        winner={currentWinner}
+        phase={winnerOverlayPhase}
+      />
+
       <OperatorControls
         onDraw={draw}
         onUndo={undo}
         onCancel={cancel}
         canDraw={canDraw}
         canUndo={canUndo}
-        isAnimating={animationPhase === 'jitter' || animationPhase === 'decel'}
+        isAnimating={isCursorVisible}
         isComplete={isComplete}
       />
     </div>
