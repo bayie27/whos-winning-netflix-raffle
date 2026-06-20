@@ -120,13 +120,18 @@ export function useRaffle(config: SessionConfig) {
                   
                   // Dismiss reveal and remove winner from grid
                   doneTimeoutRef.current = setTimeout(() => {
-                    setPool((prev) => prev.filter((p) => p.id !== selectedWinner.id));
+                    let isEmpty = false;
+                    setPool((prev) => {
+                      const updated = prev.filter((p) => p.id !== selectedWinner.id);
+                      isEmpty = updated.length === 0;
+                      return updated;
+                    });
                     setLastWinner(selectedWinner);
                     setFocusedId(null);
                     setWinnerOverlayPhase('hidden');
                     setCurrentWinner(null);
                     winnerRef.current = null;
-                    setAnimationPhase('idle');
+                    setAnimationPhase(isEmpty ? 'done' : 'idle');
                   }, 2000); // 2s reveal duration
                 }, 800);
               }, decelIntervals[decelStep] + 50);
@@ -183,7 +188,7 @@ export function useRaffle(config: SessionConfig) {
 
   const canDraw = pool.length > 0 && animationPhase === 'idle';
   const canUndo = lastWinner !== null && animationPhase === 'idle';
-  const isComplete = pool.length === 0 && animationPhase === 'idle';
+  const isComplete = pool.length === 0 && (animationPhase === 'idle' || animationPhase === 'done');
 
   return {
     participants: pool,
