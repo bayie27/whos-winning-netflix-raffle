@@ -12,8 +12,8 @@ export const RaffleCursor = forwardRef<HTMLDivElement, RaffleCursorProps>(
     return (
       <div ref={ref} className={styles.cursor} id="raffle-cursor">
         <svg
-          width="28"
-          height="28"
+          width="36"
+          height="36"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
