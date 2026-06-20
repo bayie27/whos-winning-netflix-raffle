@@ -26,6 +26,7 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
     draw,
     cancel,
     undo,
+    dismissWinner,
   } = useRaffle(config);
 
   // Unload guard to prevent accidental navigation
@@ -44,14 +45,16 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
 
   return (
     <div className={styles.raffleContainer}>
-      <header className={styles.header}>
-        <button onClick={onBack} className={styles.backButton} disabled={animationPhase !== 'idle'}>
-          ← Back
-        </button>
-        <span className={styles.logoText}>Who's Winning?</span>
-      </header>
+      <div className={styles.logoContainer}>
+        <img
+          src="/assets/logo/JPCS_Netflix Logo.png"
+          alt="JPCS-DLSL Logo"
+          className={styles.logoImage}
+        />
+      </div>
 
       <main className={styles.mainContent}>
+        <h1 className={styles.title}>Who's Winning?</h1>
         <ProfileGrid
           participants={participants}
           focusedId={focusedId}
@@ -67,12 +70,14 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
       <WinnerOverlay
         winner={currentWinner}
         phase={winnerOverlayPhase}
+        onDismiss={dismissWinner}
       />
 
       <OperatorControls
         onDraw={draw}
         onUndo={undo}
         onCancel={cancel}
+        onBack={onBack}
         canDraw={canDraw}
         canUndo={canUndo}
         isAnimating={isCursorVisible}

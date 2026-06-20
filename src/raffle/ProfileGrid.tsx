@@ -18,9 +18,23 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
     const handleResize = () => {
       const parent = gridRef.current?.parentElement;
       if (parent) {
+        const titleEl = parent.querySelector('h1');
+        let titleHeight = 0;
+        if (titleEl) {
+          const rect = titleEl.getBoundingClientRect();
+          const style = window.getComputedStyle(titleEl);
+          const marginTop = parseFloat(style.marginTop || '0');
+          const marginBottom = parseFloat(style.marginBottom || '0');
+          titleHeight = rect.height + marginTop + marginBottom;
+        }
+        const parentStyle = window.getComputedStyle(parent);
+        const paddingTop = parseFloat(parentStyle.paddingTop || '0');
+        const paddingBottom = parseFloat(parentStyle.paddingBottom || '0');
+        const paddingLeft = parseFloat(parentStyle.paddingLeft || '0');
+        const paddingRight = parseFloat(parentStyle.paddingRight || '0');
         setDimensions({
-          width: parent.clientWidth,
-          height: parent.clientHeight,
+          width: parent.clientWidth - paddingLeft - paddingRight,
+          height: parent.clientHeight - titleHeight - paddingTop - paddingBottom,
         });
       }
     };
@@ -56,14 +70,13 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
   const availableWidth = Math.max(0, W - paddingX);
   const availableHeight = Math.max(0, H - paddingY);
 
-  // Self-healing columns:
-  // If default columns causes cards to scale below 60px (due to height limit),
-  // try increasing columns up to 14.
-  let bestC = C;
-  let bestCardSize = 60;
-  let found = false;
+  // Find the column count (from Math.min(C, N) up to 14) that maximizes the card size.
+  // This automatically uses the horizontal space to make cards as large as possible.
+  const startC = Math.min(C, N);
+  let bestC = startC;
+  let maxOptSize = -1;
 
-  for (let testC = C; testC <= 14; testC++) {
+  for (let testC = startC; testC <= Math.min(14, N); testC++) {
     const testR = Math.ceil(N / testC);
     const gap = N > 56 ? 12 : (N > 20 ? 16 : 24);
     const labelHeight = N > 56 ? 28 : 36;
@@ -72,36 +85,16 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
     const maxH = (availableHeight - (testR - 1) * gap) / testR - labelHeight;
     const size = Math.min(maxW, maxH);
 
-    if (size >= 60) {
+    if (size > maxOptSize) {
+      maxOptSize = size;
       bestC = testC;
-      bestCardSize = size;
-      found = true;
-      break;
     }
   }
 
-  if (!found) {
-    let maxOptSize = -1;
-    for (let testC = C; testC <= 14; testC++) {
-      const testR = Math.ceil(N / testC);
-      const gap = N > 56 ? 12 : (N > 20 ? 16 : 24);
-      const labelHeight = N > 56 ? 28 : 36;
-
-      const maxW = (availableWidth - (testC - 1) * gap) / testC;
-      const maxH = (availableHeight - (testR - 1) * gap) / testR - labelHeight;
-      const size = Math.min(maxW, maxH);
-
-      if (size > maxOptSize) {
-        maxOptSize = size;
-        bestC = testC;
-      }
-    }
-    // Allow scaling down to 45px if forced to prevent overflow, but clamp at 60px for standard sets.
-    bestCardSize = Math.max(N > 80 ? 45 : 60, maxOptSize);
-  }
+  const bestCardSize = maxOptSize;
 
   const finalGap = N > 56 ? 12 : (N > 20 ? 16 : 24);
-  const cardSize = Math.max(N > 80 ? 45 : 60, Math.min(150, bestCardSize));
+  const cardSize = Math.max(N > 80 ? 45 : 60, Math.min(220, bestCardSize));
 
   return (
     <div
@@ -113,12 +106,13 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
         '--card-size': `${cardSize}px`,
       } as React.CSSProperties}
     >
-      {participants.map((p) => (
+      {participants.map((p, index) => (
         <ProfileCard
           key={p.id}
           participant={p}
           isFocused={p.id === focusedId}
           isRemoving={p.id === removingId}
+          style={{ '--index': index } as React.CSSProperties}
         />
       ))}
     </div>

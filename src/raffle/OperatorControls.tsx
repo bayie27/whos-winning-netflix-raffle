@@ -4,6 +4,7 @@ export interface OperatorControlsProps {
   onDraw: () => void;
   onUndo: () => void;
   onCancel: () => void;
+  onBack: () => void;
   canDraw: boolean;
   canUndo: boolean;
   isAnimating: boolean;
@@ -14,6 +15,7 @@ export default function OperatorControls({
   onDraw,
   onUndo,
   onCancel,
+  onBack,
   canDraw,
   canUndo,
   isAnimating,
@@ -23,6 +25,13 @@ export default function OperatorControls({
     return (
       <div className={styles.hudContainer}>
         <div className={styles.completeMessage}>Raffle Complete</div>
+        <button
+          onClick={onBack}
+          className={`${styles.button} ${styles.backButton}`}
+          id="back-btn"
+        >
+          Back
+        </button>
       </div>
     );
   }
@@ -55,6 +64,15 @@ export default function OperatorControls({
         id="undo-btn"
       >
         Undo
+      </button>
+
+      <button
+        onClick={onBack}
+        disabled={isAnimating}
+        className={`${styles.button} ${styles.backButton}`}
+        id="back-btn"
+      >
+        Back
       </button>
     </div>
   );

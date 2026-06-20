@@ -6,9 +6,10 @@ export interface ProfileCardProps {
   participant: Participant;
   isFocused: boolean;
   isRemoving: boolean;
+  style?: React.CSSProperties;
 }
 
-export default function ProfileCard({ participant, isFocused, isRemoving }: ProfileCardProps) {
+export default function ProfileCard({ participant, isFocused, isRemoving, style }: ProfileCardProps) {
   const [imgFailed, setImgFailed] = useState(false);
 
   const getInitials = (name: string) => {
@@ -25,7 +26,7 @@ export default function ProfileCard({ participant, isFocused, isRemoving }: Prof
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={cardClassName} data-id={participant.id}>
+    <div className={cardClassName} data-id={participant.id} style={style}>
       <div className={styles.avatarWrapper}>
         {!participant.avatarUrl || imgFailed ? (
           <div

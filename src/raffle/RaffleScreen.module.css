@@ -1,51 +1,52 @@
 .raffleContainer {
   background-color: #141414;
   color: #ffffff;
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  z-index: 100;
   overflow: hidden;
+  user-select: none;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  padding: 24px 48px;
-  position: relative;
+.logoContainer {
+  position: absolute;
+  top: 14px;
+  left: 24px;
   z-index: 10;
 }
 
-.backButton {
-  background: transparent;
-  border: 0;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  margin-right: 24px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+.logoImage {
+  height: 100px;
+  width: auto;
+  display: block;
 }
 
-.backButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.logoText {
-  font-size: 20px;
-  font-weight: 700;
-  color: #e50914;
-  letter-spacing: 0.5px;
+.title {
+  font-size: clamp(32px, 3.5vw, 54px);
+  font-weight: 400;
+  color: #ffffff;
+  margin: 60px 0 20px 0;
+  text-align: center;
+  letter-spacing: normal;
+  user-select: none;
 }
 
 .mainContent {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0 48px 80px 48px;
+  padding: 20px 20px 80px 20px;
+  overflow: hidden;
 }
 
 /* HUD Controls Stub style */
@@ -81,4 +82,23 @@
 .hudButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .logoContainer {
+    top: 16px;
+    left: 16px;
+  }
+
+  .logoImage {
+    height: 60px;
+  }
+
+  .title {
+    margin: 50px 0 10px 0;
+  }
+
+  .mainContent {
+    padding: 20px 16px 80px 16px;
+  }
 }
