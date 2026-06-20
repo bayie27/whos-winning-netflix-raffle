@@ -11,6 +11,17 @@ const AVATAR_COLORS = [
 ];
 
 /**
+ * A simple hash function to map a string to a stable positive integer.
+ */
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+/**
  * Parses raw newline-separated text into a list of Participant objects.
  * Strips leading/trailing whitespace, ignores blank lines, and enforces
  * a minimum of 2 names. Assigns stable IDs, round-robin colors, and
@@ -38,10 +49,9 @@ export function parseNames(rawText: string): Participant[] {
     // Assign color from the fixed 6-color palette (round-robin)
     const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
 
-    // Assign avatar URL from shuffled AVATAR_URLS (wrap around if name count exceeds pool size)
-    const avatarUrl = AVATAR_URLS.length > 0
-      ? AVATAR_URLS[index % AVATAR_URLS.length]
-      : '';
+    // Seeded stable avatar selection (shuffled relative to name list order)
+    const avatarIndex = hashCode(name) % (AVATAR_URLS.length || 1);
+    const avatarUrl = AVATAR_URLS.length > 0 ? AVATAR_URLS[avatarIndex] : '';
 
     return {
       id,
