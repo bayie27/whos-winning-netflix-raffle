@@ -7,7 +7,7 @@ export function useAudio() {
 
   const initCtx = async () => {
     if (!audioCtxRef.current) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || ((window as unknown) as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) {
         audioCtxRef.current = new AudioContextClass();
       }
@@ -31,7 +31,7 @@ export function useAudio() {
       const decodedBuffer = await audioCtxRef.current.decodeAudioData(arrayBuffer);
       bufferRef.current = decodedBuffer;
       return decodedBuffer;
-    } catch (e) {
+    } catch {
       // Silent catch per requirements
       return null;
     }
@@ -51,7 +51,7 @@ export function useAudio() {
       if (buffer) {
         playBuffer(buffer);
       }
-    } catch (e) {
+    } catch {
       // Silent catch per requirements
     }
   };
@@ -62,7 +62,7 @@ export function useAudio() {
       if (buffer) {
         playBuffer(buffer);
       }
-    } catch (e) {
+    } catch {
       // Silent catch per requirements
     }
   };
