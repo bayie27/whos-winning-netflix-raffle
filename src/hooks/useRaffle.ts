@@ -3,7 +3,14 @@ import type { SessionConfig, Participant, AnimationPhase, OverlayPhase } from '.
 import useAudio from './useAudio';
 
 export function useRaffle(config: SessionConfig) {
-  const [pool, setPool] = useState<Participant[]>(config.participants);
+  const [pool, setPool] = useState<Participant[]>(() => {
+    const arr = [...config.participants];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
   const [lastWinner, setLastWinner] = useState<Participant | null>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>('idle');
@@ -23,6 +30,7 @@ export function useRaffle(config: SessionConfig) {
   const lockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync poolRef with pool state
   useEffect(() => {
@@ -38,6 +46,7 @@ export function useRaffle(config: SessionConfig) {
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
     };
   }, []);
 
@@ -73,8 +82,9 @@ export function useRaffle(config: SessionConfig) {
     let lastHopTime = 0;
     let nextHopDelay = 100; // start fast (100ms per hop during jitter)
     
-    // Deceleration hop intervals: 150ms -> 220ms -> 320ms -> 450ms -> 600ms
-    const decelIntervals = [150, 220, 320, 450, 600];
+    // Deceleration hop intervals (in ms) to create a dramatic, slow-down effect.
+    // To make it run slower/longer or faster, add/remove steps or adjust the ms values below.
+    const decelIntervals = [140, 190, 260, 350, 470, 620, 800, 1050];
     let decelStep = 0;
     let currentPhase: 'jitter' | 'decel' = 'jitter';
 
@@ -93,8 +103,11 @@ export function useRaffle(config: SessionConfig) {
             // Jitter: Hop to random card in pool
             const activePool = poolRef.current;
             const randCard = activePool[Math.floor(Math.random() * activePool.length)];
-            setFocusedId(randCard.id);
             moveCursorToCard(randCard.id, 100);
+            if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+            highlightTimeoutRef.current = setTimeout(() => {
+              setFocusedId(randCard.id);
+            }, 100);
           }
         }
 
@@ -105,8 +118,11 @@ export function useRaffle(config: SessionConfig) {
             
             if (decelStep === decelIntervals.length - 1) {
               // Final lock hop onto the pre-selected winner
-              setFocusedId(selectedWinner.id);
               moveCursorToCard(selectedWinner.id, decelIntervals[decelStep]);
+              if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+              highlightTimeoutRef.current = setTimeout(() => {
+                setFocusedId(selectedWinner.id);
+              }, decelIntervals[decelStep]);
               
               // Wait for final hop slide to finish, then lock and zoom
               lockTimeoutRef.current = setTimeout(() => {
@@ -117,29 +133,17 @@ export function useRaffle(config: SessionConfig) {
                 // Fixed 800ms pause after zoom completes, then reveal name
                 revealTimeoutRef.current = setTimeout(() => {
                   setWinnerOverlayPhase('reveal');
-                  
-                  // Dismiss reveal and remove winner from grid
-                  doneTimeoutRef.current = setTimeout(() => {
-                    let isEmpty = false;
-                    setPool((prev) => {
-                      const updated = prev.filter((p) => p.id !== selectedWinner.id);
-                      isEmpty = updated.length === 0;
-                      return updated;
-                    });
-                    setLastWinner(selectedWinner);
-                    setFocusedId(null);
-                    setWinnerOverlayPhase('hidden');
-                    setCurrentWinner(null);
-                    winnerRef.current = null;
-                    setAnimationPhase(isEmpty ? 'done' : 'idle');
-                  }, 2000); // 2s reveal duration
                 }, 800);
               }, decelIntervals[decelStep] + 50);
             } else {
               // Intermediate decel hops (random cards)
               const randCard = activePool[Math.floor(Math.random() * activePool.length)];
-              setFocusedId(randCard.id);
               moveCursorToCard(randCard.id, decelIntervals[decelStep]);
+              const currentDelay = decelIntervals[decelStep];
+              if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+              highlightTimeoutRef.current = setTimeout(() => {
+                setFocusedId(randCard.id);
+              }, currentDelay);
             }
             
             nextHopDelay = decelIntervals[decelStep];
@@ -171,6 +175,7 @@ export function useRaffle(config: SessionConfig) {
     if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
 
     // Reset state without removing anyone
     setFocusedId(null);
@@ -184,6 +189,24 @@ export function useRaffle(config: SessionConfig) {
     if (animationPhase !== 'idle' || !lastWinner) return;
     setPool((prev) => [...prev, lastWinner]);
     setLastWinner(null);
+  };
+
+  const dismissWinner = () => {
+    if (winnerOverlayPhase !== 'reveal' && winnerOverlayPhase !== 'zoom') return;
+    if (!currentWinner) return;
+
+    let isEmpty = false;
+    setPool((prev) => {
+      const updated = prev.filter((p) => p.id !== currentWinner.id);
+      isEmpty = updated.length === 0;
+      return updated;
+    });
+    setLastWinner(currentWinner);
+    setFocusedId(null);
+    setWinnerOverlayPhase('hidden');
+    setCurrentWinner(null);
+    winnerRef.current = null;
+    setAnimationPhase(isEmpty ? 'done' : 'idle');
   };
 
   const canDraw = pool.length > 0 && animationPhase === 'idle';
@@ -203,6 +226,7 @@ export function useRaffle(config: SessionConfig) {
     draw,
     cancel,
     undo,
+    dismissWinner,
   };
 }
 export default useRaffle;
