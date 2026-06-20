@@ -70,13 +70,13 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
   const availableWidth = Math.max(0, W - paddingX);
   const availableHeight = Math.max(0, H - paddingY);
 
-  // Find the column count (from Math.min(C, N) up to 14) that maximizes the card size.
+  // Find the column count (from Math.min(C, N) up to 45) that maximizes the card size.
   // This automatically uses the horizontal space to make cards as large as possible.
   const startC = Math.min(C, N);
   let bestC = startC;
   let maxOptSize = -1;
 
-  for (let testC = startC; testC <= Math.min(14, N); testC++) {
+  for (let testC = startC; testC <= Math.min(45, N); testC++) {
     const testR = Math.ceil(N / testC);
     const gap = N > 56 ? 12 : (N > 20 ? 16 : 24);
     const labelHeight = N > 56 ? 28 : 36;
@@ -93,15 +93,26 @@ export default function ProfileGrid({ participants, focusedId, removingId }: Pro
 
   const bestCardSize = maxOptSize;
 
+  const minSize = N > 80 ? 35 : 60;
   const finalGap = N > 56 ? 12 : (N > 20 ? 16 : 24);
-  const cardSize = Math.max(N > 80 ? 45 : 60, Math.min(220, bestCardSize));
+  let cardSize = Math.max(minSize, Math.min(220, bestCardSize));
+  let finalC = bestC;
+
+  // If the calculated size is smaller than the minimum size, the grid is height-constrained.
+  // To avoid large side spacings and minimize vertical scrolling, we recalculate the column count
+  // to fit as many columns of minSize as horizontally possible (capped at 50 columns).
+  if (bestCardSize < minSize) {
+    const maxCols = Math.floor((availableWidth + finalGap) / (minSize + finalGap));
+    finalC = Math.max(startC, Math.min(50, Math.min(maxCols, N)));
+    cardSize = minSize;
+  }
 
   return (
     <div
       ref={gridRef}
       className={styles.grid}
       style={{
-        gridTemplateColumns: `repeat(${bestC}, ${cardSize}px)`,
+        gridTemplateColumns: `repeat(${finalC}, ${cardSize}px)`,
         gap: `${finalGap}px`,
         '--card-size': `${cardSize}px`,
       } as React.CSSProperties}
