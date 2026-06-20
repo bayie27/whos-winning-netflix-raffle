@@ -4,8 +4,8 @@
   align-items: center;
   cursor: pointer;
   transition: transform 0.2s ease;
-  width: 100%;
-  max-width: 150px;
+  width: var(--card-size, 150px);
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -35,13 +35,13 @@
   align-items: center;
   color: #fff;
   font-weight: 700;
-  font-size: clamp(24px, 4vw, 48px);
+  font-size: calc(var(--card-size, 150px) * 0.32);
   user-select: none;
 }
 
 .nameLabel {
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: calc(var(--card-size, 150px) * 0.08);
+  font-size: clamp(10px, calc(var(--card-size, 150px) * 0.1), 14px);
   color: #808080;
   text-align: center;
   width: 100%;
