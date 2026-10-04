@@ -10,21 +10,16 @@ export const RaffleCursor = forwardRef<HTMLDivElement, RaffleCursorProps>(
     if (!visible) return null;
 
     return (
-      <div ref={ref} className={styles.cursor} id="raffle-cursor">
+      <div ref={ref} className={styles.cursor} id="raffle-cursor" aria-hidden="true">
         <svg
-          width="36"
-          height="36"
-          viewBox="0 0 24 24"
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M4.5 3V19.12L9.41 14.21H17.5L4.5 3Z"
-            fill="#E50914"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
+          <path d="M3 11V3h8m10 0h8v8m0 10v8h-8m-10 0H3v-8" stroke="#f2c879" strokeWidth="2" />
+          <circle cx="16" cy="16" r="4" fill="#e50914" stroke="#fff4e8" strokeWidth="1.5" />
         </svg>
       </div>
     );

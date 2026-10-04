@@ -51,6 +51,7 @@ npm run lint
 
 ### 1. Setup Screen
 * **Operator Input:** Textarea accepts newline-separated plain text, allowing direct copy-paste from Google Sheets columns.
+* **QR-GAAP Import:** The operator can import `qr-gaap-student-names.json` from the QR-GAAP project to replace the current names without retyping them.
 * **Live Validation:** Automatically trims whitespace, ignores blank lines, and displays a live count of valid participants.
 * **Suspense Slider:** Operator can configure the total jitter animation length (3–10 seconds, default: 5s).
 * **Start Gate:** Transitioning to the raffle screen requires a minimum of 2 valid names.
@@ -58,6 +59,8 @@ npm run lint
 ### 2. Raffle Grid
 * **Breakpoint Grid:** Automatically adapts card sizes and column counts dynamically using fixed thresholds (≤10→3, ≤20→4, ≤35→5, ≤56→6, ≤80→7, ≤110→8, >110→9 columns) to ensure cards remain legible.
 * **Unload Guard:** Displays a browser confirmation prompt on attempt to reload or navigate away mid-raffle.
+
+The importer accepts the QR-GAAP export shape `{ "source": "qr-gaap", "exportedAt": "...", "names": ["..."] }`, as well as a plain JSON array of names or a `students` array containing `{ "name": "..." }` objects.
 
 ### 3. Draw Engine
 * **Pre-selection:** The winner is selected instantly when "Draw" is pressed. The animation is purely theatrical.

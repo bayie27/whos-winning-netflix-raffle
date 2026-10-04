@@ -7,9 +7,10 @@ export interface ProfileCardProps {
   isFocused: boolean;
   isRemoving: boolean;
   style?: React.CSSProperties;
+  compact?: boolean;
 }
 
-export default function ProfileCard({ participant, isFocused, isRemoving, style }: ProfileCardProps) {
+export default function ProfileCard({ participant, isFocused, isRemoving, style, compact = false }: ProfileCardProps) {
   const [imgFailed, setImgFailed] = useState(false);
 
   const getInitials = (name: string) => {
@@ -23,11 +24,12 @@ export default function ProfileCard({ participant, isFocused, isRemoving, style 
     styles.card,
     isFocused ? styles.focused : '',
     isRemoving ? styles.removing : '',
+    compact ? styles.compact : '',
   ].filter(Boolean).join(' ');
 
   return (
     <div className={cardClassName} data-id={participant.id} style={style}>
-      <div className={styles.avatarWrapper}>
+      <div className={styles.avatarWrapper} data-selector-portrait>
         {!participant.avatarUrl || imgFailed ? (
           <div
             className={styles.initialsFallback}
@@ -44,7 +46,7 @@ export default function ProfileCard({ participant, isFocused, isRemoving, style 
           />
         )}
       </div>
-      <div className={styles.nameLabel}>{participant.name}</div>
+      <div className={styles.nameLabel} title={participant.name}><span>{participant.name}</span></div>
     </div>
   );
 }

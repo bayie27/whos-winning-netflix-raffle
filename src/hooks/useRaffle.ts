@@ -30,7 +30,6 @@ export function useRaffle(config: SessionConfig) {
   const lockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync poolRef with pool state
   useEffect(() => {
@@ -46,20 +45,31 @@ export function useRaffle(config: SessionConfig) {
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
-      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
     };
   }, []);
 
   const moveCursorToCard = (cardId: string, speedMs: number = 100) => {
     const cardEl = document.querySelector(`[data-id="${cardId}"]`);
     if (cardEl && cursorRef.current) {
-      const rect = cardEl.getBoundingClientRect();
+      const viewport = cardEl.closest<HTMLElement>('[data-profile-viewport]');
+      if (viewport) {
+        const cardRect = cardEl.getBoundingClientRect();
+        const viewportRect = viewport.getBoundingClientRect();
+        if (cardRect.top < viewportRect.top + 8 || cardRect.bottom > viewportRect.bottom - 8) {
+          // Keep off-screen portraits visible in a scrollable, small-screen wall.
+          viewport.scrollTop += cardRect.top - viewportRect.top - (viewportRect.height - cardRect.height) / 2;
+        }
+      }
+      const portrait = cardEl.querySelector('[data-selector-portrait]') || cardEl;
+      const rect = portrait.getBoundingClientRect();
       const x = rect.left + rect.width / 2;
       const y = rect.top + rect.height / 2;
       
       // Apply inline transition duration for custom speed
       cursorRef.current.style.transition = `transform ${speedMs}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
       cursorRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      // Highlight the selected card in the same frame as its cursor move.
+      setFocusedId(cardId);
     }
   };
 
@@ -104,10 +114,6 @@ export function useRaffle(config: SessionConfig) {
             const activePool = poolRef.current;
             const randCard = activePool[Math.floor(Math.random() * activePool.length)];
             moveCursorToCard(randCard.id, 100);
-            if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-            highlightTimeoutRef.current = setTimeout(() => {
-              setFocusedId(randCard.id);
-            }, 100);
           }
         }
 
@@ -119,14 +125,10 @@ export function useRaffle(config: SessionConfig) {
             if (decelStep === decelIntervals.length - 1) {
               // Final lock hop onto the pre-selected winner
               moveCursorToCard(selectedWinner.id, decelIntervals[decelStep]);
-              if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-              highlightTimeoutRef.current = setTimeout(() => {
-                setFocusedId(selectedWinner.id);
-              }, decelIntervals[decelStep]);
               
               // Wait for final hop slide to finish, then lock and zoom
               lockTimeoutRef.current = setTimeout(() => {
-                playWinnerLock();
+                playWinnerLock(0.8);
                 setAnimationPhase('zoom');
                 setWinnerOverlayPhase('zoom');
                 
@@ -139,11 +141,6 @@ export function useRaffle(config: SessionConfig) {
               // Intermediate decel hops (random cards)
               const randCard = activePool[Math.floor(Math.random() * activePool.length)];
               moveCursorToCard(randCard.id, decelIntervals[decelStep]);
-              const currentDelay = decelIntervals[decelStep];
-              if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-              highlightTimeoutRef.current = setTimeout(() => {
-                setFocusedId(randCard.id);
-              }, currentDelay);
             }
             
             nextHopDelay = decelIntervals[decelStep];
@@ -153,8 +150,10 @@ export function useRaffle(config: SessionConfig) {
       }
 
       // Continue requestAnimationFrame loop if not locked/zoomed
-      if (currentPhase === 'jitter' || (currentPhase === 'decel' && decelStep <= decelIntervals.length)) {
+      if (currentPhase === 'jitter' || decelStep < decelIntervals.length) {
         rafIdRef.current = requestAnimationFrame(tick);
+      } else {
+        rafIdRef.current = null;
       }
     };
 
@@ -175,7 +174,6 @@ export function useRaffle(config: SessionConfig) {
     if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
-    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
 
     // Reset state without removing anyone
     setFocusedId(null);

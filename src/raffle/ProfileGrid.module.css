@@ -1,10 +1,18 @@
 .grid {
   display: grid;
-  gap: 24px;
   width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100%;
+  padding: 16px;
   justify-content: center;
-  align-items: center;
+  align-content: center;
+  align-items: start;
+}
+.emptyMessage {
+  grid-column: 1 / -1;
+  justify-self: center;
+  color: #ccb8bc;
+  font-size: 18px;
+  text-align: center;
+  margin: 0;
+  width: min(100%, 360px);
 }

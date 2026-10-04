@@ -5,9 +5,12 @@ export interface Participant {
   avatarColor: string;
 }
 
+export type RaffleType = 'default' | 'roulette';
+
 export interface SessionConfig {
   participants: Participant[];
   suspenseDuration: number; // in seconds, typically 3-10
+  raffleType: RaffleType;
 }
 
 export type AnimationPhase = 'idle' | 'jitter' | 'decel' | 'zoom' | 'reveal' | 'done';

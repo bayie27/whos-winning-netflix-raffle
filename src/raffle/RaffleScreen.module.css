@@ -1,104 +1,102 @@
 .raffleContainer {
-  background-color: #141414;
-  color: #ffffff;
+  --selector-red: #e50914;
+  --selector-gold: #f2c879;
+  --selector-cream: #fff4e8;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
   display: flex;
   flex-direction: column;
-  z-index: 100;
   overflow: hidden;
-  user-select: none;
+  color: var(--selector-cream);
+  background:
+    radial-gradient(ellipse at 15% 10%, #410b1366, transparent 65%),
+    #080808;
+  z-index: 100;
 }
 
-.logoContainer {
-  position: absolute;
-  top: 14px;
-  left: 24px;
-  z-index: 10;
-}
-
-.logoImage {
-  height: 100px;
-  width: auto;
-  display: block;
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  flex-shrink: 0;
+  align-items: center;
+  gap: 24px;
+  padding: clamp(20px, 3vh, 36px) clamp(20px, 4vw, 64px) 16px;
 }
 
 .title {
-  font-size: clamp(32px, 3.5vw, 54px);
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(36px, 4.2vw, 60px);
   font-weight: 400;
-  color: #ffffff;
-  margin: 60px 0 20px 0;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
   text-align: center;
-  letter-spacing: normal;
-  user-select: none;
-}
-
-.mainContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 20px 80px 20px;
-  overflow: hidden;
-}
-
-/* HUD Controls Stub style */
-.controlsStub {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid #333;
-  padding: 16px;
-  border-radius: 4px;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.hudButton {
-  background: #333;
   color: #fff;
-  border: 0;
-  padding: 6px 12px;
-  border-radius: 2px;
+}
+
+.logoImage { grid-column: 1; grid-row: 1; justify-self: start; height: 44px; width: auto; max-width: 140px; object-fit: contain; }
+.backButton {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #dccdd0;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
   cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.2s ease;
 }
+.backButton svg { width: 24px; height: 24px; }
+.backButton:hover:not(:disabled) { color: var(--selector-gold); }
+.backButton:disabled { opacity: 0.4; cursor: not-allowed; }
+.backButton:focus-visible { outline: 3px solid var(--selector-gold); outline-offset: 5px; }
 
-.hudButton:hover:not(:disabled) {
-  background: #444;
+.mainContent { flex: 1; min-height: 0; display: flex; padding: 8px clamp(16px, 4vw, 64px); }
+.portraitWall {
+  position: relative;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  border: 1px solid #fff4e81f;
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 20%, #42131b40, transparent 75%),
+    #120c0e;
+  box-shadow: inset 0 1px 0 #fff4e809, 0 20px 70px #0005;
+  scrollbar-width: thin;
+  scrollbar-color: #68414b #120c0e;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
+.portraitWall:focus-visible { outline: 2px solid var(--selector-gold); outline-offset: 3px; }
+.selecting .portraitWall { border-color: #e5091480; box-shadow: inset 0 1px 0 #e5091426, 0 0 60px #e509141a; }
 
-.hudButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+@media (max-width: 800px) {
+  .header { grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  .title { grid-column: 1 / -1; grid-row: 2; font-size: clamp(32px, 5vw, 44px); }
+  .backButton { grid-column: 2; }
 }
-
-@media (max-width: 480px) {
-  .logoContainer {
-    top: 16px;
-    left: 16px;
-  }
-
-  .logoImage {
-    height: 60px;
-  }
-
-  .title {
-    margin: 50px 0 10px 0;
-  }
-
-  .mainContent {
-    padding: 20px 16px 80px 16px;
-  }
+@media (max-width: 600px) {
+  .header { padding: 18px 20px 10px; gap: 16px; }
+  .logoImage { height: 24px; max-width: 90px; }
+  .backButton { font-size: 12px; gap: 4px; }
+  .backButton svg { width: 20px; height: 20px; }
+  .mainContent { padding: 6px 16px; }
 }
+@media (max-height: 600px) and (min-width: 601px) {
+  .header { padding-top: 12px; padding-bottom: 8px; }
+  .logoImage { height: 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .portraitWall { transition: none; } }
