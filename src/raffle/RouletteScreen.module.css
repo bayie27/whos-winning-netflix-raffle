@@ -1,0 +1,228 @@
+.container {
+  --roulette-red: #e50914;
+  --roulette-gold: #f2c879;
+  --roulette-cream: #fff4e8;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(310px, 1fr) auto;
+  padding-block: clamp(28px, 5vh, 64px) 32px;
+  color: var(--roulette-cream);
+  background:
+    radial-gradient(ellipse at 50% 46%, #410b1380, transparent 65%),
+    linear-gradient(130deg, #170b0d, #080808 65%);
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 50%, #e509142b, transparent 60%);
+  opacity: 0.25;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+}
+
+.spinning::before { opacity: 1; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  padding-inline: clamp(24px, 6vw, 88px);
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 0 12px 12px;
+  color: #dccdd0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.backButton svg { width: 24px; height: 24px; }
+.backButton:hover:not(:disabled) { color: var(--roulette-gold); }
+.backButton:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.stage { position: relative; align-self: center; height: 310px; width: 100%; }
+
+/* The perforations belong to the reel, so they share its exact transform. */
+.sliderTrack::before, .sliderTrack::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24px;
+  border-block: 1px solid #f2c87966;
+  background-color: #281b1e;
+  background-image: repeating-linear-gradient(90deg, transparent 0 16px, #fff4e880 16px 36px, transparent 36px 52px);
+  background-size: 52px 12px;
+  background-repeat: repeat-x;
+  background-position: center;
+  box-shadow: 0 2px 12px #0005, inset 0 1px 0 #fff4e814;
+  pointer-events: none;
+}
+
+.sliderTrack::before { top: -40px; }
+.sliderTrack::after { bottom: -40px; }
+
+.trackContainer {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.sliderTrack { position: relative; width: max-content; display: flex; align-items: center; will-change: transform; }
+.cardWrapper { flex-shrink: 0; transition: opacity 400ms ease; }
+
+.portrait {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid #fff4e829;
+  background: #20181a;
+  box-shadow: 0 12px 24px #0007;
+}
+
+.portrait img, .initials { width: 100%; height: 100%; object-fit: cover; display: block; }
+.initials { display: grid; place-items: center; font-size: 52px; font-weight: 700; color: white; }
+
+.portraitName {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 32px 12px 14px;
+  background: linear-gradient(transparent, #080808e6 44%);
+  color: #fff4e8;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.portraitName span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.selectionFrame {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: 174px;
+  height: 254px;
+  transform: translate(-50%, -50%);
+  border: 1px solid #f2c87999;
+  border-radius: 6px;
+  box-shadow: 0 0 0 6px #f2c87906, 0 0 70px #e5091426;
+  pointer-events: none;
+  transition: box-shadow 400ms ease, border-color 400ms ease;
+}
+
+.selectionFrame::before, .selectionFrame::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: var(--roulette-gold);
+  border-style: solid;
+}
+
+.selectionFrame::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 6px 0 0; }
+.selectionFrame::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 6px; }
+.spinning .selectionFrame { border-color: var(--roulette-gold); box-shadow: 0 0 0 6px #f2c87909, 0 0 90px #e5091460; }
+
+.pointer {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 19px;
+  background: var(--roulette-gold);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  pointer-events: none;
+}
+
+.edgeShade {
+  position: absolute;
+  z-index: 2;
+  inset: -16px 0;
+  background: linear-gradient(90deg, #10090bf5, transparent 25%, transparent 75%, #080808f5);
+  pointer-events: none;
+}
+
+.winnerCard .portrait { border-color: var(--roulette-gold); box-shadow: 0 0 28px #f2c87940; }
+
+.controls { position: relative; padding: 12px 24px 0; text-align: center; }
+.spinStatus { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 24px; font-size: 14px; color: #dccdd0; overflow-wrap: anywhere; }
+.statusLight { width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: var(--roulette-gold); }
+.spinning .statusLight { background: var(--roulette-red); box-shadow: 0 0 12px #e50914; }
+.progressTrack { width: min(260px, 100%); height: 2px; margin: 16px auto 22px; background: #fff4e817; overflow: hidden; }
+.progressFill { height: 100%; background: var(--roulette-gold); transform-origin: left; animation: spinProgress linear both; }
+
+.spinButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 250px;
+  min-height: 58px;
+  padding: 16px 28px;
+  border: 1px solid #ff3d47;
+  border-radius: 5px;
+  background: var(--roulette-red);
+  color: white;
+  box-shadow: 0 6px 30px #e5091433;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.spinButton svg { width: 21px; height: 21px; }
+.spinButton:hover:not(:disabled) { background: #fc1925; box-shadow: 0 6px 40px #e5091450; }
+.spinButton:disabled { background: #54151a; border-color: #89242c; color: #e6aeb2; box-shadow: none; cursor: not-allowed; }
+.spinButton:focus-visible, .backButton:focus-visible { outline: 3px solid var(--roulette-gold); outline-offset: 5px; }
+
+@keyframes spinProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (max-width: 600px) {
+  .container { padding-block: 26px 24px; grid-template-rows: auto minmax(310px, 1fr) auto; }
+  .header { align-items: flex-start; gap: 16px; }
+  .backButton { font-size: 12px; padding: 8px 0; gap: 3px; }
+  .backButton svg { width: 20px; height: 20px; }
+  .edgeShade { background: linear-gradient(90deg, #10090bb3, transparent 18%, transparent 82%, #080808b3); }
+  .spinButton { width: min(300px, 100%); min-width: 0; }
+}
+
+@media (max-height: 600px) and (min-width: 601px) {
+  .container { grid-template-rows: auto minmax(310px, 1fr) auto; padding-block: 16px; }
+  .controls { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; padding: 8px 40px 0; }
+  .progressTrack { display: none; }
+  .spinButton { min-height: 48px; padding-block: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container::before, .selectionFrame, .cardWrapper, .spinButton { transition: none; }
+  .progressFill { animation: none; transform: none; }
+}

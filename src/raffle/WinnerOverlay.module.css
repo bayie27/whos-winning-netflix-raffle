@@ -1,114 +1,177 @@
 .overlayContainer {
+  --reveal-red: #e50914;
+  --reveal-gold: #f2c879;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.92);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 2000;
-  animation: fadeIn 0.3s ease forwards;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  overflow: auto;
+  padding: clamp(24px, 5vw, 80px);
+  color: #fff4e8;
+  background:
+    radial-gradient(ellipse at 15% 85%, #410b1380, transparent 60%),
+    radial-gradient(ellipse at 90% 5%, #e5091426, transparent 50%),
+    #080808f7;
+  backdrop-filter: blur(18px);
+  animation: backdropIn 300ms ease both;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.overlayContainer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, #fff4e806 42%, transparent 54%);
+}
+
+.backdropWord {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -58%);
+  width: 100%;
+  overflow: hidden;
+  text-align: center;
+  font-family: Impact, 'Arial Narrow', sans-serif;
+  font-size: clamp(100px, 26vw, 460px);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px #fff4e814;
+  pointer-events: none;
 }
 
 .winnerCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: scale(0.3);
-  opacity: 0;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
   position: relative;
   z-index: 10;
+  width: min(100%, 1080px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 88px);
+  animation: stageIn 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.winnerCard.zoom,
-.winnerCard.reveal {
-  transform: scale(1.15);
-  opacity: 1;
+.portraitStage { position: relative; }
+
+.portraitStage::before {
+  content: '';
+  position: absolute;
+  inset: -14px 18px 0 -14px;
+  border: 1px solid #f2c87959;
+  transform: rotate(-4deg);
+  pointer-events: none;
 }
 
 .avatarWrapper {
-  width: 70vw;
-  max-width: 380px;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  position: relative;
+  aspect-ratio: 1 / 1.12;
+  border-radius: 6px;
   overflow: hidden;
-  border: 4px solid #fff;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
-  background-color: #1f1f1f;
+  background: #20181a;
+  border: 1px solid #ffffff26;
+  box-shadow: -12px 16px 0 #e50914, 0 24px 80px #000a, 0 0 100px #e5091433;
 }
 
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.avatarWrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 65%, #08080860);
+  pointer-events: none;
 }
+
+.avatarImage { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .initialsFallback {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  font-weight: 700;
-  font-size: clamp(48px, 12vw, 120px);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: clamp(64px, 10vw, 150px);
+  font-weight: 800;
 }
+
+.winnerDetails {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 450ms ease, transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal .winnerDetails { opacity: 1; transform: none; }
 
 .congratsLabel {
-  margin-top: 36px;
-  font-size: clamp(14px, 3vw, 22px);
-  font-weight: 700;
-  color: #e50914;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.5s ease 0.05s, transform 0.5s ease 0.05s;
-  text-align: center;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-.congratsLabel.nameVisible {
-  opacity: 1;
-  transform: translateY(0);
+  margin: 0 0 18px;
+  color: var(--reveal-gold);
+  font-size: clamp(18px, 2.2vw, 25px);
+  font-weight: 600;
 }
 
 .winnerName {
-  margin-top: 12px;
-  font-size: clamp(36px, 8vw, 84px);
+  margin: 0;
+  font-family: Impact, 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  font-size: clamp(42px, 7.5vw, 108px);
+  font-weight: 400;
+  line-height: 1.03;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  text-shadow: 0 4px 30px #0008;
+}
+
+.continueButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 15px 25px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: #fff4e8;
+  color: #080808;
+  font: inherit;
   font-weight: 700;
-  color: #fff;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s;
-  text-align: center;
-  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
-  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: background 150ms ease;
 }
 
-.winnerName.nameVisible {
-  opacity: 1;
-  transform: translateY(0);
+.continueButton svg { width: 21px; height: 21px; }
+.continueButton:hover { background: var(--reveal-gold); }
+.continueButton:focus-visible { outline: 3px solid var(--reveal-red); outline-offset: 5px; }
+.continueButton:disabled { cursor: default; }
+
+.confettiCanvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
+
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes stageIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.confettiCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 5;
+@media (max-width: 650px) {
+  .winnerCard { grid-template-columns: 1fr; gap: 30px; text-align: center; padding: 16px 0; }
+  .portraitStage { width: min(52vw, 230px); margin-inline: auto; }
+  .portraitStage::before { inset: -10px 14px 0 -10px; }
+  .avatarWrapper { aspect-ratio: 1; box-shadow: -8px 10px 0 #e50914, 0 20px 70px #e5091433; }
+  .backdropWord { top: 30%; font-size: 29vw; }
+  .congratsLabel { margin-bottom: 12px; }
+  .winnerName { font-size: clamp(36px, 10vw, 64px); }
+  .continueButton { margin-top: 24px; }
+}
+
+@media (max-height: 600px) and (min-width: 651px) {
+  .winnerCard { width: min(100%, 880px); grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.4fr); }
+  .avatarWrapper { aspect-ratio: 1; }
+  .winnerName { font-size: clamp(36px, 6vw, 72px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlayContainer, .winnerCard { animation: none; }
+  .winnerDetails { transition: none; transform: none; }
 }

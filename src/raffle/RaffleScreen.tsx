@@ -44,22 +44,26 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
   const isCursorVisible = animationPhase === 'jitter' || animationPhase === 'decel';
 
   return (
-    <div className={styles.raffleContainer}>
-      <div className={styles.logoContainer}>
-        <img
-          src="/assets/logo/JPCS_Netflix Logo.png"
-          alt="JPCS-DLSL Logo"
-          className={styles.logoImage}
-        />
-      </div>
+    <div className={`${styles.raffleContainer} ${isCursorVisible ? styles.selecting : ''}`}>
+      <header className={styles.header}>
+        <img src="/assets/logo/JPCS_Netflix Logo.png" alt="JPCS-DLSL Logo" className={styles.logoImage} />
+        <h1 className={styles.title}>Who's Winning?</h1>
+        <button className={styles.backButton} onClick={onBack} disabled={animationPhase !== 'idle' && !isComplete}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+            <path d="m14 6-6 6 6 6M8 12h12" />
+          </svg>
+          Back to Setup
+        </button>
+      </header>
 
       <main className={styles.mainContent}>
-        <h1 className={styles.title}>Who's Winning?</h1>
-        <ProfileGrid
-          participants={participants}
-          focusedId={focusedId}
-          removingId={null}
-        />
+        <div className={styles.portraitWall} data-profile-viewport aria-label="Participant portraits" role="region" tabIndex={0}>
+          <ProfileGrid
+            participants={participants}
+            focusedId={focusedId}
+            removingId={null}
+          />
+        </div>
       </main>
 
       <RaffleCursor
@@ -77,7 +81,6 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
         onDraw={draw}
         onUndo={undo}
         onCancel={cancel}
-        onBack={onBack}
         canDraw={canDraw}
         canUndo={canUndo}
         isAnimating={isCursorVisible}

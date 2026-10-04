@@ -1,86 +1,55 @@
 .card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  position: relative;
   width: var(--card-size, 150px);
   max-width: 100%;
-  margin: 0 auto;
-
-  /* Staggered entrance animation */
-  opacity: 0;
-  transform: translateY(20px) scale(0.9);
-  animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: calc(var(--index, 0) * 0.03s);
-}
-
-@keyframes cardEntrance {
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.avatarWrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 4px;
+  border: 1px solid #fff4e829;
+  border-radius: 5px;
+  background: #201316;
+  box-shadow: 0 6px 16px #0005;
   overflow: hidden;
-  border: 3px solid transparent;
-  background-color: #1f1f1f;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
+.avatarWrapper { width: 100%; aspect-ratio: 1; overflow: hidden; background: #201316; }
+.avatarImage { width: 100%; height: 100%; object-fit: cover; display: block; }
 .initialsFallback {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  font-weight: 700;
+  display: grid;
+  place-items: center;
+  color: white;
   font-size: calc(var(--card-size, 150px) * 0.32);
+  font-weight: 700;
   user-select: none;
 }
-
 .nameLabel {
-  margin-top: calc(var(--card-size, 150px) * 0.08);
-  font-size: clamp(12px, calc(var(--card-size, 150px) * 0.12), 18px);
-  color: #e5e5e5;
+  position: absolute;
+  inset: auto 0 0;
+  padding: 30px 10px 12px;
+  background: linear-gradient(transparent, #080808ed 55%);
+  color: #fff4e8;
+  font-size: clamp(12px, calc(var(--card-size, 150px) * 0.09), 18px);
+  font-weight: 600;
+  line-height: 1.25;
   text-align: center;
-  width: 100%;
+  overflow-wrap: anywhere;
+}
+.nameLabel span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.2s ease;
 }
-
-/* Focused Highlight State */
-.focused .avatarWrapper {
-  border-color: #e50914;
-  box-shadow: 0 0 0 2px #e50914, 0 0 15px rgba(229, 9, 20, 0.8);
-  transform: scale(1.05);
-}
-
-.focused .nameLabel {
-  color: #ffffff;
+.compact { background: #1b1014; border-radius: 3px; }
+.compact .nameLabel {
+  position: static;
+  height: 22px;
+  padding: 2px 1px 0;
+  background: none;
+  font-size: clamp(9px, calc(var(--card-size, 150px) * 0.18), 10px);
+  line-height: 1;
   font-weight: 500;
 }
-
-/* Removing State */
-.removing {
-  animation: none !important;
-  opacity: 0;
-  transform: scale(0.6) !important;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
+/* Focus changes instantly, in the same frame as the cursor target. */
+.focused { border-color: #e50914; outline: 2px solid #e50914; outline-offset: 1px; box-shadow: 0 0 22px #e5091480; z-index: 2; }
+.focused .nameLabel { color: #f2c879; }
+.removing { opacity: 0; transform: scale(0.6); pointer-events: none; transition: opacity 300ms ease, transform 300ms ease; }
+@media (prefers-reduced-motion: reduce) { .removing { transition: none; } }
