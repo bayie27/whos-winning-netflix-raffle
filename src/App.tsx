@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { SessionConfig, RaffleType } from './types';
+import type { SessionConfig, RaffleType, Participant } from './types';
 import SetupScreen from './setup/SetupScreen';
 import RaffleScreen from './raffle/RaffleScreen';
 import RouletteScreen from './raffle/RouletteScreen';
@@ -17,6 +17,20 @@ function App() {
     setView('raffle');
   };
 
+  // Drop drawn winners from the names box so the next session only has who's left.
+  const handleBack = (remaining: Participant[]) => {
+    if (sessionConfig) {
+      const remainingIds = new Set(remaining.map((p) => p.id));
+      setRawText(
+        sessionConfig.participants
+          .filter((p) => remainingIds.has(p.id))
+          .map((p) => p.name)
+          .join('\n'),
+      );
+    }
+    setView('setup');
+  };
+
   return (
     <div className={styles.container}>
       {view === 'setup' ? (
@@ -32,14 +46,12 @@ function App() {
       ) : sessionConfig?.raffleType === 'roulette' ? (
         <RouletteScreen
           config={sessionConfig}
-          onBack={() => setView('setup')}
+          onBack={handleBack}
         />
       ) : (
         <RaffleScreen
           config={sessionConfig!}
-          onBack={() => {
-            setView('setup');
-          }}
+          onBack={handleBack}
         />
       )}
     </div>

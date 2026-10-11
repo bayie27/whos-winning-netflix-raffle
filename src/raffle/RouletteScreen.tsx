@@ -7,7 +7,7 @@ import { useAudio } from '../hooks/useAudio';
 
 export interface RouletteScreenProps {
   config: SessionConfig;
-  onBack: () => void;
+  onBack: (remaining: Participant[]) => void;
 }
 
 interface ReelItem {
@@ -159,7 +159,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   return (
     <div className={`${styles.container} ${isSpinning ? styles.spinning : ''}`}>
       <header className={styles.header}>
-        <button onClick={onBack} className={styles.backButton} disabled={isSpinning}>
+        <button onClick={() => onBack(participants)} className={styles.backButton} disabled={isSpinning}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
             <path d="m14 6-6 6 6 6M8 12h12" />
           </svg>
