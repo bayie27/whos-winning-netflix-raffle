@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { SessionConfig, Participant, OverlayPhase } from '../types';
 import RoulettePortrait from './RoulettePortrait';
 import WinnerOverlay from './WinnerOverlay';
@@ -7,14 +7,49 @@ import { useAudio } from '../hooks/useAudio';
 
 export interface RouletteScreenProps {
   config: SessionConfig;
-  onBack: () => void;
+  onBack: (remaining: Participant[]) => void;
+}
+
+interface ReelItem {
+  participant: Participant;
+  uniqueId: string;
+}
+
+const REEL_LENGTH = 150;
+
+// Fisher-Yates, so every ordering is equally likely.
+function shuffle<T>(array: T[]): T[] {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// Built only on mount and when the pool changes, never during a spin.
+function buildReel(participants: Participant[]): ReelItem[] {
+  const items: ReelItem[] = [];
+  if (participants.length === 0) return items;
+  while (items.length < REEL_LENGTH) {
+    shuffle(participants).forEach((p, index) => {
+      items.push({ participant: p, uniqueId: `${p.id}-${items.length}-${index}` });
+    });
+  }
+  return items.slice(0, REEL_LENGTH);
 }
 
 export default function RouletteScreen({ config, onBack }: RouletteScreenProps) {
-  const { participants, suspenseDuration } = config;
+  const { suspenseDuration } = config;
   const cardWidth = 150;
   const cardGap = 20;
   const cardFullWidth = cardWidth + cardGap;
+  // Participants still in the running; winners are removed once their reveal is dismissed.
+  const [participants, setParticipants] = useState<Participant[]>(config.participants);
+  const [rouletteItems, setRouletteItems] = useState<ReelItem[]>(() => buildReel(config.participants));
+  // Most recent winner, so a single undo can put them back in the pool.
+  const [lastWinner, setLastWinner] = useState<Participant | null>(null);
+  const isComplete = participants.length === 0;
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<Participant | null>(null);
   const [winnerIndex, setWinnerIndex] = useState(-1);
@@ -25,18 +60,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   const trackRef = useRef<HTMLDivElement>(null);
   const rAFRef = useRef<number | null>(null);
   const lastPassedIndex = useRef<number>(-1);
-
-  // Generate a long list of cards for the roulette
-  const rouletteItems = useMemo(() => {
-    const items: { participant: Participant; uniqueId: string }[] = [];
-    while (items.length < 150) {
-      const shuffled = [...participants].sort(() => Math.random() - 0.5);
-      shuffled.forEach((p, index) => {
-        items.push({ participant: p, uniqueId: `${p.id}-${items.length}-${index}` });
-      });
-    }
-    return items.slice(0, 150);
-  }, [participants]);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const monitorAnimation = () => {
     if (!trackRef.current) return;
@@ -68,11 +92,52 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   useEffect(() => {
     return () => {
       if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     };
   }, []);
 
+  const resetReelPosition = () => setSliderOffset(cardFullWidth * 8 + cardWidth / 2);
+
+  const handleDismissWinner = () => {
+    if (winner) {
+      const remaining = participants.filter((p) => p.id !== winner.id);
+      setParticipants(remaining);
+      setRouletteItems(buildReel(remaining));
+      setLastWinner(winner);
+    }
+    setWinner(null);
+    setWinnerIndex(-1);
+    setOverlayPhase('hidden');
+    // The reel is rebuilt without the winner, so put it back at its resting position.
+    resetReelPosition();
+  };
+
+  const handleUndo = () => {
+    if (!lastWinner || isSpinning) return;
+    // Like the default selector, the restored participant goes to the end of the pool.
+    const restored = [...participants, lastWinner];
+    setParticipants(restored);
+    setRouletteItems(buildReel(restored));
+    setLastWinner(null);
+    resetReelPosition();
+  };
+
+  // Abort a spin without removing anyone; the reel snaps back to its resting position.
+  const handleCancel = () => {
+    if (!isSpinning) return;
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+    revealTimeoutRef.current = null;
+    rAFRef.current = null;
+    setIsSpinning(false);
+    setWinner(null);
+    setWinnerIndex(-1);
+    setOverlayPhase('hidden');
+    resetReelPosition();
+  };
+
   const handleDraw = () => {
-    if (isSpinning) return;
+    if (isSpinning || isComplete) return;
     // Unlock sound from the button click before the animation begins.
     void prepareAudio().catch(() => {});
 
@@ -109,7 +174,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
         rAFRef.current = requestAnimationFrame(monitorAnimation);
 
         // Wait for animation to finish
-        setTimeout(() => {
+        revealTimeoutRef.current = setTimeout(() => {
           setWinner(targetParticipant);
           setIsSpinning(false);
           setOverlayPhase('reveal');
@@ -123,7 +188,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   return (
     <div className={`${styles.container} ${isSpinning ? styles.spinning : ''}`}>
       <header className={styles.header}>
-        <button onClick={onBack} className={styles.backButton} disabled={isSpinning}>
+        <button onClick={() => onBack(participants)} className={styles.backButton} disabled={isSpinning}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
             <path d="m14 6-6 6 6 6M8 12h12" />
           </svg>
@@ -170,25 +235,46 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
       <WinnerOverlay
         winner={winner}
         phase={overlayPhase}
-        onDismiss={() => {
-          setOverlayPhase('hidden');
-        }}
+        onDismiss={handleDismissWinner}
       />
 
       <footer className={styles.controls}>
         <div className={styles.spinStatus} role="status" aria-live="polite">
           <span className={styles.statusLight} aria-hidden="true" />
-          <span>{isSpinning ? 'Finding a winner…' : winner ? `${winner.name} selected` : 'Ready to spin'}</span>
+          <span>
+            {isComplete
+              ? 'Raffle complete'
+              : isSpinning
+                ? 'Finding a winner…'
+                : winner
+                  ? `${winner.name} selected`
+                  : `Ready to spin · ${participants.length} remaining`}
+          </span>
         </div>
         <div className={styles.progressTrack} aria-hidden="true">
           {isSpinning && <div className={styles.progressFill} style={{ animationDuration: `${suspenseDuration}s` }} />}
         </div>
-        <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning}>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            {isSpinning ? <path d="M7 6h3v12H7zm7 0h3v12h-3z" /> : <path d="m8 5 11 7-11 7z" />}
-          </svg>
-          {isSpinning ? 'Spinning…' : winner ? 'Spin Again' : 'Spin Roulette'}
-        </button>
+        <div className={styles.buttonRow}>
+          <button
+            onClick={handleUndo}
+            disabled={!lastWinner || isSpinning}
+            className={`${styles.secondaryButton} ${styles.undoButton}`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+              <path d="M8 4 3 9l5 5M3 9h10a6 6 0 0 1 0 12h-3" />
+            </svg>
+            Undo
+          </button>
+          <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning || isComplete}>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              {isSpinning ? <path d="M7 6h3v12H7zm7 0h3v12h-3z" /> : <path d="m8 5 11 7-11 7z" />}
+            </svg>
+            {isSpinning ? 'Spinning…' : isComplete ? 'No one left' : 'Spin Roulette'}
+          </button>
+          <div className={styles.cancelSlot}>
+            {isSpinning && <button onClick={handleCancel} className={styles.secondaryButton}>Cancel</button>}
+          </div>
+        </div>
       </footer>
     </div>
   );

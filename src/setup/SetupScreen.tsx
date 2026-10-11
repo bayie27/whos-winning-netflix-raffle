@@ -4,6 +4,10 @@ import { parseImportedNames } from '../lib/importNames';
 import type { SessionConfig, RaffleType } from '../types';
 import styles from './SetupScreen.module.css';
 
+const MIN_DURATION = 3;
+const MAX_DURATION = 60;
+const DURATION_PRESETS = [5, 10, 20, 30, 60];
+
 export interface SetupScreenProps {
   initialRawText: string;
   initialSuspenseDuration: number;
@@ -126,13 +130,26 @@ export default function SetupScreen({
           <input
             id="suspense-slider"
             type="range"
-            min={3}
-            max={10}
+            min={MIN_DURATION}
+            max={MAX_DURATION}
             step={0.5}
             value={initialSuspenseDuration}
             onChange={(e) => onChangeSuspenseDuration(parseFloat(e.target.value))}
             className={styles.slider}
           />
+          <div className={styles.presetRow} role="group" aria-label="Duration presets">
+            {DURATION_PRESETS.map((seconds) => (
+              <button
+                key={seconds}
+                type="button"
+                className={`${styles.presetButton} ${initialSuspenseDuration === seconds ? styles.presetButtonActive : ''}`}
+                onClick={() => onChangeSuspenseDuration(seconds)}
+                aria-pressed={initialSuspenseDuration === seconds}
+              >
+                {seconds}s
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className={styles.inputGroup}>

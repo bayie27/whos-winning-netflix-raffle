@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { SessionConfig } from '../types';
+import type { SessionConfig, Participant } from '../types';
 import ProfileGrid from './ProfileGrid';
 import OperatorControls from './OperatorControls';
 import RaffleCursor from './RaffleCursor';
@@ -9,7 +9,7 @@ import styles from './RaffleScreen.module.css';
 
 export interface RaffleScreenProps {
   config: SessionConfig;
-  onBack: () => void;
+  onBack: (remaining: Participant[]) => void;
 }
 
 export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
@@ -48,7 +48,7 @@ export default function RaffleScreen({ config, onBack }: RaffleScreenProps) {
       <header className={styles.header}>
         <img src="/assets/logo/JPCS_Netflix Logo.png" alt="JPCS-DLSL Logo" className={styles.logoImage} />
         <h1 className={styles.title}>Who's Winning?</h1>
-        <button className={styles.backButton} onClick={onBack} disabled={animationPhase !== 'idle' && !isComplete}>
+        <button className={styles.backButton} onClick={() => onBack(participants)} disabled={animationPhase !== 'idle' && !isComplete}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
             <path d="m14 6-6 6 6 6M8 12h12" />
           </svg>

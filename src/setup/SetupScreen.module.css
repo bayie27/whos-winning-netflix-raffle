@@ -223,6 +223,36 @@
   background: #ff1e27;
 }
 
+.presetRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presetButton {
+  background: transparent;
+  color: #b3b3b3;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.presetButton:hover {
+  border-color: #e50914;
+  color: #ffffff;
+}
+
+.presetButtonActive {
+  background: rgba(229, 9, 20, 0.2);
+  border-color: #e50914;
+  color: #ffffff;
+}
+
 .startButton {
   background: #e50914;
   color: #ffffff;
