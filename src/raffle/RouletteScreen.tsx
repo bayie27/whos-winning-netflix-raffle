@@ -47,6 +47,8 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   // Participants still in the running; winners are removed once their reveal is dismissed.
   const [participants, setParticipants] = useState<Participant[]>(config.participants);
   const [rouletteItems, setRouletteItems] = useState<ReelItem[]>(() => buildReel(config.participants));
+  // Most recent winner, so a single undo can put them back in the pool.
+  const [lastWinner, setLastWinner] = useState<Participant | null>(null);
   const isComplete = participants.length === 0;
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<Participant | null>(null);
@@ -94,17 +96,44 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
     };
   }, []);
 
+  const resetReelPosition = () => setSliderOffset(cardFullWidth * 8 + cardWidth / 2);
+
   const handleDismissWinner = () => {
     if (winner) {
       const remaining = participants.filter((p) => p.id !== winner.id);
       setParticipants(remaining);
       setRouletteItems(buildReel(remaining));
+      setLastWinner(winner);
     }
     setWinner(null);
     setWinnerIndex(-1);
     setOverlayPhase('hidden');
     // The reel is rebuilt without the winner, so put it back at its resting position.
-    setSliderOffset(cardFullWidth * 8 + cardWidth / 2);
+    resetReelPosition();
+  };
+
+  const handleUndo = () => {
+    if (!lastWinner || isSpinning) return;
+    // Like the default selector, the restored participant goes to the end of the pool.
+    const restored = [...participants, lastWinner];
+    setParticipants(restored);
+    setRouletteItems(buildReel(restored));
+    setLastWinner(null);
+    resetReelPosition();
+  };
+
+  // Abort a spin without removing anyone; the reel snaps back to its resting position.
+  const handleCancel = () => {
+    if (!isSpinning) return;
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+    revealTimeoutRef.current = null;
+    rAFRef.current = null;
+    setIsSpinning(false);
+    setWinner(null);
+    setWinnerIndex(-1);
+    setOverlayPhase('hidden');
+    resetReelPosition();
   };
 
   const handleDraw = () => {
@@ -225,12 +254,27 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
         <div className={styles.progressTrack} aria-hidden="true">
           {isSpinning && <div className={styles.progressFill} style={{ animationDuration: `${suspenseDuration}s` }} />}
         </div>
-        <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning || isComplete}>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            {isSpinning ? <path d="M7 6h3v12H7zm7 0h3v12h-3z" /> : <path d="m8 5 11 7-11 7z" />}
-          </svg>
-          {isSpinning ? 'Spinning…' : isComplete ? 'No one left' : 'Spin Roulette'}
-        </button>
+        <div className={styles.buttonRow}>
+          <button
+            onClick={handleUndo}
+            disabled={!lastWinner || isSpinning}
+            className={`${styles.secondaryButton} ${styles.undoButton}`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+              <path d="M8 4 3 9l5 5M3 9h10a6 6 0 0 1 0 12h-3" />
+            </svg>
+            Undo
+          </button>
+          <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning || isComplete}>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              {isSpinning ? <path d="M7 6h3v12H7zm7 0h3v12h-3z" /> : <path d="m8 5 11 7-11 7z" />}
+            </svg>
+            {isSpinning ? 'Spinning…' : isComplete ? 'No one left' : 'Spin Roulette'}
+          </button>
+          <div className={styles.cancelSlot}>
+            {isSpinning && <button onClick={handleCancel} className={styles.secondaryButton}>Cancel</button>}
+          </div>
+        </div>
       </footer>
     </div>
   );
