@@ -11,10 +11,13 @@ export interface RouletteScreenProps {
 }
 
 export default function RouletteScreen({ config, onBack }: RouletteScreenProps) {
-  const { participants, suspenseDuration } = config;
+  const { suspenseDuration } = config;
   const cardWidth = 150;
   const cardGap = 20;
   const cardFullWidth = cardWidth + cardGap;
+  // Participants still in the running; winners are removed once their reveal is dismissed.
+  const [participants, setParticipants] = useState<Participant[]>(config.participants);
+  const isComplete = participants.length === 0;
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<Participant | null>(null);
   const [winnerIndex, setWinnerIndex] = useState(-1);
@@ -25,10 +28,12 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   const trackRef = useRef<HTMLDivElement>(null);
   const rAFRef = useRef<number | null>(null);
   const lastPassedIndex = useRef<number>(-1);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Generate a long list of cards for the roulette
   const rouletteItems = useMemo(() => {
     const items: { participant: Participant; uniqueId: string }[] = [];
+    if (participants.length === 0) return items;
     while (items.length < 150) {
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
       shuffled.forEach((p, index) => {
@@ -68,11 +73,23 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   useEffect(() => {
     return () => {
       if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     };
   }, []);
 
+  const handleDismissWinner = () => {
+    if (winner) {
+      setParticipants((prev) => prev.filter((p) => p.id !== winner.id));
+    }
+    setWinner(null);
+    setWinnerIndex(-1);
+    setOverlayPhase('hidden');
+    // The reel is rebuilt without the winner, so put it back at its resting position.
+    setSliderOffset(cardFullWidth * 8 + cardWidth / 2);
+  };
+
   const handleDraw = () => {
-    if (isSpinning) return;
+    if (isSpinning || isComplete) return;
     // Unlock sound from the button click before the animation begins.
     void prepareAudio().catch(() => {});
 
@@ -109,7 +126,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
         rAFRef.current = requestAnimationFrame(monitorAnimation);
 
         // Wait for animation to finish
-        setTimeout(() => {
+        revealTimeoutRef.current = setTimeout(() => {
           setWinner(targetParticipant);
           setIsSpinning(false);
           setOverlayPhase('reveal');
@@ -170,24 +187,30 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
       <WinnerOverlay
         winner={winner}
         phase={overlayPhase}
-        onDismiss={() => {
-          setOverlayPhase('hidden');
-        }}
+        onDismiss={handleDismissWinner}
       />
 
       <footer className={styles.controls}>
         <div className={styles.spinStatus} role="status" aria-live="polite">
           <span className={styles.statusLight} aria-hidden="true" />
-          <span>{isSpinning ? 'Finding a winner…' : winner ? `${winner.name} selected` : 'Ready to spin'}</span>
+          <span>
+            {isComplete
+              ? 'Raffle complete'
+              : isSpinning
+                ? 'Finding a winner…'
+                : winner
+                  ? `${winner.name} selected`
+                  : `Ready to spin · ${participants.length} remaining`}
+          </span>
         </div>
         <div className={styles.progressTrack} aria-hidden="true">
           {isSpinning && <div className={styles.progressFill} style={{ animationDuration: `${suspenseDuration}s` }} />}
         </div>
-        <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning}>
+        <button onClick={handleDraw} className={styles.spinButton} disabled={isSpinning || isComplete}>
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             {isSpinning ? <path d="M7 6h3v12H7zm7 0h3v12h-3z" /> : <path d="m8 5 11 7-11 7z" />}
           </svg>
-          {isSpinning ? 'Spinning…' : winner ? 'Spin Again' : 'Spin Roulette'}
+          {isSpinning ? 'Spinning…' : isComplete ? 'No one left' : 'Spin Roulette'}
         </button>
       </footer>
     </div>
