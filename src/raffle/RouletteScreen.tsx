@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { SessionConfig, Participant, OverlayPhase } from '../types';
 import RoulettePortrait from './RoulettePortrait';
 import WinnerOverlay from './WinnerOverlay';
@@ -10,6 +10,35 @@ export interface RouletteScreenProps {
   onBack: () => void;
 }
 
+interface ReelItem {
+  participant: Participant;
+  uniqueId: string;
+}
+
+const REEL_LENGTH = 150;
+
+// Fisher-Yates, so every ordering is equally likely.
+function shuffle<T>(array: T[]): T[] {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// Built only on mount and when the pool changes, never during a spin.
+function buildReel(participants: Participant[]): ReelItem[] {
+  const items: ReelItem[] = [];
+  if (participants.length === 0) return items;
+  while (items.length < REEL_LENGTH) {
+    shuffle(participants).forEach((p, index) => {
+      items.push({ participant: p, uniqueId: `${p.id}-${items.length}-${index}` });
+    });
+  }
+  return items.slice(0, REEL_LENGTH);
+}
+
 export default function RouletteScreen({ config, onBack }: RouletteScreenProps) {
   const { suspenseDuration } = config;
   const cardWidth = 150;
@@ -17,6 +46,7 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   const cardFullWidth = cardWidth + cardGap;
   // Participants still in the running; winners are removed once their reveal is dismissed.
   const [participants, setParticipants] = useState<Participant[]>(config.participants);
+  const [rouletteItems, setRouletteItems] = useState<ReelItem[]>(() => buildReel(config.participants));
   const isComplete = participants.length === 0;
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<Participant | null>(null);
@@ -29,19 +59,6 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
   const rAFRef = useRef<number | null>(null);
   const lastPassedIndex = useRef<number>(-1);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Generate a long list of cards for the roulette
-  const rouletteItems = useMemo(() => {
-    const items: { participant: Participant; uniqueId: string }[] = [];
-    if (participants.length === 0) return items;
-    while (items.length < 150) {
-      const shuffled = [...participants].sort(() => Math.random() - 0.5);
-      shuffled.forEach((p, index) => {
-        items.push({ participant: p, uniqueId: `${p.id}-${items.length}-${index}` });
-      });
-    }
-    return items.slice(0, 150);
-  }, [participants]);
 
   const monitorAnimation = () => {
     if (!trackRef.current) return;
@@ -79,7 +96,9 @@ export default function RouletteScreen({ config, onBack }: RouletteScreenProps) 
 
   const handleDismissWinner = () => {
     if (winner) {
-      setParticipants((prev) => prev.filter((p) => p.id !== winner.id));
+      const remaining = participants.filter((p) => p.id !== winner.id);
+      setParticipants(remaining);
+      setRouletteItems(buildReel(remaining));
     }
     setWinner(null);
     setWinnerIndex(-1);
